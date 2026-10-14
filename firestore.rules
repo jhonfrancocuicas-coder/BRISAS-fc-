@@ -1,0 +1,88 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidTeam(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             (!('shortName' in data) || data.shortName == null || (data.shortName is string && data.shortName.size() <= 20)) &&
+             (!('shieldColor' in data) || data.shieldColor == null || (data.shieldColor is string && data.shieldColor.size() <= 20)) &&
+             (!('accentColor' in data) || data.accentColor == null || (data.accentColor is string && data.accentColor.size() <= 20)) &&
+             (!('badgeIcon' in data) || data.badgeIcon == null || (data.badgeIcon is string && data.badgeIcon.size() <= 50)) &&
+             data.position is int && data.position >= 0 &&
+             data.pj is int && data.pj >= 0 &&
+             data.g is int && data.g >= 0 &&
+             data.e is int && data.e >= 0 &&
+             data.p is int && data.p >= 0 &&
+             data.gf is int && data.gf >= 0 &&
+             data.gc is int && data.gc >= 0 &&
+             data.pts is int && data.pts >= 0 &&
+             (!('dg' in data) || data.dg is int) &&
+             (!('createdAt' in data) || data.createdAt is timestamp) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    function isValidMatch(data) {
+      return data.round is int && data.round >= 1 && data.round <= 100 &&
+             data.homeTeamId is string && data.homeTeamId.size() > 0 && data.homeTeamId.size() <= 64 &&
+             data.homeTeamName is string && data.homeTeamName.size() > 0 && data.homeTeamName.size() <= 100 &&
+             data.awayTeamId is string && data.awayTeamId.size() > 0 && data.awayTeamId.size() <= 64 &&
+             data.awayTeamName is string && data.awayTeamName.size() > 0 && data.awayTeamName.size() <= 100 &&
+             (!('homeScore' in data) || (data.homeScore is int && data.homeScore >= 0 && data.homeScore <= 100)) &&
+             (!('awayScore' in data) || (data.awayScore is int && data.awayScore >= 0 && data.awayScore <= 100)) &&
+             data.status is string && (data.status == 'scheduled' || data.status == 'live' || data.status == 'finished') &&
+             (!('matchDate' in data) || data.matchDate == null || (data.matchDate is string && data.matchDate.size() <= 100)) &&
+             (!('createdAt' in data) || data.createdAt is timestamp) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    match /users/{userId} {
+      match /teams/{teamId} {
+        allow get, list: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() && request.auth.uid == userId &&
+                         isValidId(teamId) &&
+                         isValidTeam(incoming()) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time;
+        allow update: if isSignedIn() && request.auth.uid == userId &&
+                         isValidId(teamId) &&
+                         isValidTeam(incoming()) &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time;
+        allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(teamId);
+      }
+
+      match /matches/{matchId} {
+        allow get, list: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() && request.auth.uid == userId &&
+                         isValidId(matchId) &&
+                         isValidMatch(incoming()) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time;
+        allow update: if isSignedIn() && request.auth.uid == userId &&
+                         isValidId(matchId) &&
+                         isValidMatch(incoming()) &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time;
+        allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(matchId);
+      }
+    }
+  }
+}

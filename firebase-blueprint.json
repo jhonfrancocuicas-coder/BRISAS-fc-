@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "Team": {
+      "title": "Team",
+      "description": "Football team in the tournament standings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique team identifier" },
+        "name": { "type": "string", "description": "Team full name" },
+        "shortName": { "type": "string", "description": "Short abbreviation" },
+        "shieldColor": { "type": "string", "description": "Primary color in hex format" },
+        "accentColor": { "type": "string", "description": "Accent color in hex format" },
+        "badgeIcon": { "type": "string", "description": "Badge icon type descriptor" },
+        "position": { "type": "integer", "description": "Current position in table" },
+        "pj": { "type": "integer", "description": "Partidos Jugados (Matches played)" },
+        "g": { "type": "integer", "description": "Partidos Ganados (Won)" },
+        "e": { "type": "integer", "description": "Partidos Empatados (Drawn)" },
+        "p": { "type": "integer", "description": "Partidos Perdidos (Lost)" },
+        "gf": { "type": "integer", "description": "Goles a Favor (Goals for)" },
+        "gc": { "type": "integer", "description": "Goles en Contra (Goals against)" },
+        "dg": { "type": "integer", "description": "Diferencia de Goles" },
+        "pts": { "type": "integer", "description": "Puntos (Points)" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp" }
+      },
+      "required": ["name", "position", "pj", "g", "e", "p", "gf", "gc", "pts"]
+    },
+    "Match": {
+      "title": "Match",
+      "description": "Fixture or match result between two teams",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique match identifier" },
+        "round": { "type": "integer", "description": "Tournament round / Jornada" },
+        "homeTeamId": { "type": "string", "description": "Home team ID" },
+        "homeTeamName": { "type": "string", "description": "Home team name" },
+        "awayTeamId": { "type": "string", "description": "Away team ID" },
+        "awayTeamName": { "type": "string", "description": "Away team name" },
+        "homeScore": { "type": "integer", "description": "Home team score" },
+        "awayScore": { "type": "integer", "description": "Away team score" },
+        "status": { "type": "string", "description": "Match status (scheduled, finished)" },
+        "matchDate": { "type": "string", "description": "Scheduled date / time string" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp" }
+      },
+      "required": ["round", "homeTeamId", "homeTeamName", "awayTeamId", "awayTeamName", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/teams/{teamId}": {
+      "schema": { "$ref": "#/entities/Team" },
+      "description": "Teams and standings owned and managed by the tournament administrator"
+    },
+    "/users/{userId}/matches/{matchId}": {
+      "schema": { "$ref": "#/entities/Match" },
+      "description": "Tournament fixtures and match scores managed by the tournament administrator"
+    }
+  }
+}

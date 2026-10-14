@@ -1,0 +1,6 @@
+{
+  "name": "Liga Fronteo",
+  "description": "Tabla de posiciones y administración de la Liga Fronteo Obelisco",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
